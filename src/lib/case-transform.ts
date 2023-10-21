@@ -1,0 +1,1 @@
+export const pascalCaseToKebabCase = (x: string) => x.replaceAll(/(?<!^|[A-Z])[A-Z]+/g, "-$&").toLowerCase();

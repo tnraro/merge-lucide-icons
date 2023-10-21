@@ -1,0 +1,11 @@
+:where(body) {
+  background: #111110;
+  color: #EEEEEC;
+}
+
+:where(input, button) {
+  font-size: unset;
+  font-family: unset;
+  color: unset;
+  background: unset;
+}
