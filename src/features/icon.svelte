@@ -4,7 +4,7 @@
 </script>
 
 <svg class="lucide lucide-{as}" viewBox="0 0 24 24" width={size} height={size}>
-  <use href="/icons.svg#{as}" />
+  <use href="{import.meta.env.BASE_URL}/icons.svg#{as}" />
 </svg>
 
 <style>
