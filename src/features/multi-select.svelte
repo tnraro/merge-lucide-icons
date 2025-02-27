@@ -1,19 +1,29 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
   import { search } from "../lib/fuzzy-search";
 
-  export let values: string[] = [];
-  export let items: string[] = [];
-  export let placeholder: string | undefined = undefined;
+  interface Props {
+    values: string[];
+    items: string[];
+    placeholder: string | undefined;
+    item: Snippet<[string]>;
+  }
+  let {
+    values = $bindable(),
+    items,
+    placeholder,
+    item: renderItem,
+  }: Props = $props();
 
   const popupId = crypto.randomUUID();
 
   const scroll = () => {
+    if (popup == null) return;
     const rect = popup.children[index].getBoundingClientRect();
     const dr = popup.getBoundingClientRect();
     if (rect.bottom > dr.bottom)
       popup.scroll(0, popup.scrollTop + rect.bottom - dr.bottom);
-    if (rect.top < dr.top)
-      popup.scroll(0, popup.scrollTop + rect.top - dr.top);
+    if (rect.top < dr.top) popup.scroll(0, popup.scrollTop + rect.top - dr.top);
   };
   const addValue = (value: string) => {
     const set = new Set(values);
@@ -32,12 +42,12 @@
   };
 
   let input: HTMLElement;
-  let popup: HTMLElement;
-  let value = "";
-  let index = 0;
+  let popup = $state<HTMLElement>();
+  let value = $state("");
+  let index = $state(0);
 
-  $: isOpen = value.length >= 1;
-  $: filteredItems = isOpen ? search(value, items) : [];
+  let isOpen = $derived(value.length >= 1);
+  let filteredItems = $derived(isOpen ? search(value, items) : []);
 </script>
 
 <div
@@ -47,30 +57,26 @@
   aria-activedescendant="{popupId}-{index}"
   tabindex="0"
   class="multi-select"
-  on:click={() => focus()}
-  on:focus={() => focus()}
-  on:keydown={(e) => {}}
+  onclick={() => focus()}
+  onfocus={() => focus()}
+  onkeydown={(e) => {}}
 >
   {#each values as value}
-    <button class="value" on:click|stopPropagation={(e) => deleteValue(value)}>
-      <slot name="value" {value} />
+    <button
+      class="value"
+      onclick={(e) => {
+        e.stopPropagation();
+        deleteValue(value);
+      }}
+    >
+      {@render renderItem(value)}
       <span class="delete-value">×</span>
     </button>
   {/each}
-  <input
-    class="select-input"
-    bind:this={input}
-    bind:value
-    {placeholder}
-  />
+  <input class="select-input" bind:this={input} bind:value {placeholder} />
 </div>
 {#if isOpen}
-  <ul
-    id={popupId}
-    bind:this={popup}
-    role="listbox"
-    class="popup"
-  >
+  <ul id={popupId} bind:this={popup} role="listbox" class="popup">
     {#each filteredItems as item, i}
       <li
         role="option"
@@ -78,21 +84,21 @@
         tabindex="0"
         aria-selected={index === i}
         class="popup__value"
-        on:click={() => {
+        onclick={() => {
           addValue(item);
           value = "";
           index = 0;
         }}
-        on:keydown={() => {}}
+        onkeydown={() => {}}
       >
-        <slot name="value" value={item} />
+        {@render renderItem(item)}
       </li>
     {/each}
   </ul>
 {/if}
 
 <svelte:window
-  on:keydown={(e) => {
+  onkeydown={(e) => {
     if (!isOpen) return;
     if (e.key === "ArrowDown") {
       index = (index + 1) % filteredItems.length;

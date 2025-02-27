@@ -1,6 +1,9 @@
 <script lang="ts">
-  export let as: "search" | "settings2" | "pen-tool" | "file-code2";
-  export let size = 24;
+  interface Props {
+    as: "search" | "settings2" | "pen-tool" | "file-code2";
+    size?: number;
+  }
+  let { as, size = 24 }: Props = $props();
 </script>
 
 <svg class="lucide lucide-{as}" viewBox="0 0 24 24" width={size} height={size}>

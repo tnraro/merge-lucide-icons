@@ -6,24 +6,26 @@
 
   const iconNames = [...icons.keys()];
 
-  let values: string[] = [];
-  let options = {
+  let values = $state<string[]>([]);
+  let options = $state({
     indent: "  ",
     minify: false,
-  };
+  });
 
-  $: svg = genSvg(values, options);
-  $: svelte = genSvelte(values, options);
+  let svg = $derived(genSvg(values, options));
+  let svelte = $derived(genSvelte(values, options));
 </script>
 
 <main>
   <section>
     <h1><Icon as="search" />Search</h1>
     <MultiSelect bind:values items={iconNames} placeholder="Search icons...">
-      <div class="value" slot="value" let:value>
-        {@html createIconHtmlString(value)}
-        {value}
-      </div>
+      {#snippet item(value)}
+        <div class="value">
+          {@html createIconHtmlString(value)}
+          {value}
+        </div>
+      {/snippet}
     </MultiSelect>
   </section>
   <section>
@@ -40,7 +42,7 @@
         type="button"
         class="options__option"
         id="options-minify"
-        on:click={() => (options.minify = !options.minify)}
+        onclick={() => (options.minify = !options.minify)}
         >{options.minify}</button
       >
     </div>
